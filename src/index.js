@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // End view elements
   const resultContainer = document.querySelector("#result");
+  const restartGameButtonElm = document.querySelector("#restartButton");
 
   /************  SET VISIBILITY OF VIEWS  ************/
 
@@ -57,21 +58,33 @@ document.addEventListener("DOMContentLoaded", () => {
   /************  SHOW INITIAL CONTENT  ************/
 
   // Convert the time remaining in seconds to minutes and seconds, and pad the numbers with zeros if needed
-  const minutes = Math.floor(quiz.timeRemaining / 60)
-    .toString()
-    .padStart(2, "0");
-  const seconds = (quiz.timeRemaining % 60).toString().padStart(2, "0");
+  function displayTimer() {
+    const minutes = Math.floor(quiz.timeRemaining / 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = (quiz.timeRemaining % 60).toString().padStart(2, "0");
 
-  // Display the time remaining in the time remaining container
-  const timeRemainingContainer = document.getElementById("timeRemaining");
-  timeRemainingContainer.innerText = `${minutes}:${seconds}`;
+    const timeRemainingContainer = document.getElementById("timeRemaining");
+    timeRemainingContainer.innerText = `${minutes}:${seconds}`;
+  }
+
+  displayTimer();
 
   // Show first question
   showQuestion();
 
   /************  TIMER  ************/
 
-  let timer;
+  function countdown() {
+    if (quiz.timeRemaining === 0) {
+      showResults();
+    }
+
+    quiz.timeRemaining--;
+    displayTimer();
+  }
+
+  let timer = setInterval(countdown, 1000);
 
   /************  EVENT LISTENERS  ************/
 
@@ -182,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showResults() {
     // YOUR CODE HERE:
+    clearInterval(timer);
     //
     // 1. Hide the quiz view (div#quizView)
     quizView.style.display = "none";
@@ -191,7 +205,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Update the result container (div#result) inner text to show the number of correct answers out of total questions
     const correctAnswersCount = quiz.correctAnswers;
-    const questionsCount = quiz.currentQuestionIndex;
+    const questionsCount = quiz.questions.length;
     resultContainer.innerText = `You scored ${correctAnswersCount} out of ${questionsCount} correct answers!`; // This value is hardcoded as a placeholder
   }
+
+  // RESTARTING THE GAME
+  restartGameButtonElm.addEventListener("click", () => {
+    quizView.style.display = "block";
+    endView.style.display = "none";
+    quiz.correctAnswers = 0;
+    quiz.currentQuestionIndex = 0;
+    quiz.shuffleQuestions();
+    showQuestion();
+
+    quiz.timeRemaining = quizDuration;
+    displayTimer();
+    timer = setInterval(countdown, 1000);
+  });
 });
